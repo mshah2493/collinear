@@ -8,53 +8,56 @@ public class FastCollinearPoints
 	
 	public FastCollinearPoints(Point[] points)
 	{
-		if (!isValid(points)) throw new IllegalArgumentException();
+		if (hasEmptyPoint(points)) throw new IllegalArgumentException();
 		
 		lineSegments = new LinkedList<LineSegment>();
 		
 		Point[] copySegment = points.clone();
         Arrays.sort(copySegment);
+        
+        if (!hasDuplicates(copySegment)) throw new IllegalArgumentException();
 		
-        for (int i = 0; i < copySegment.length; i++) 
+        for (int i = 0; i < copySegment.length - 3; i++) 
         {
-            Point p = copySegment[i];
-            Point[] pointsBySlope = copySegment.clone();
-            Arrays.sort(pointsBySlope, p.slopeOrder());
+            Arrays.sort(copySegment);
+            Arrays.sort(copySegment, copySegment[i].slopeOrder());
 
-            for (int j = 0, k = 1, l = 2; l < pointsBySlope.length; l++) 
+            for (int p = 0, j = 1, k = 2; k < copySegment.length; k++) 
             {
-                while (l < pointsBySlope.length
-                        && pointsBySlope[j].compareTo(pointsBySlope[k]) == 0 
-                        && pointsBySlope[j].compareTo(pointsBySlope[l]) == 0) 
+                while (k < copySegment.length
+                        && Double.compare(copySegment[p].slopeTo(copySegment[j]), copySegment[p].slopeTo(copySegment[k])) == 0) 
                 {
-                	++l;
+                    k++;
+                }
+                
+                if (k - j >= 3 && copySegment[p].compareTo(copySegment[j]) < 0) 
+                {
+                	lineSegments.add(new LineSegment(copySegment[p], copySegment[k - 1]));
                 }
 
-                if (l - k >= 3 && pointsBySlope[j].compareTo(pointsBySlope[k]) < 0) 
-                {
-                	lineSegments.add(new LineSegment(pointsBySlope[j], pointsBySlope[l - 1]));
-                }
-
-                k = l;
+                j = k;
             }
         }
 	}
 
-	private boolean isValid(Point[] points) 
+	private boolean hasEmptyPoint(Point[] points) 
 	{
-		if (points == null) return true;
-		
+        if (points == null) return true;
+        
+        for (Point p : points) 
+            if (p == null) return true;
+        
+        return false;
+    }
+	
+	private boolean hasDuplicates(Point[] points) 
+	{
 		for (int i = 0; i < points.length - 1; i++) 
-		{
-			if (points[i] == null) return true;
-			
-			 if (points[i].compareTo(points[i + 1]) == 0) 
-	         {
-	                return true;
-	         }
+		{			
+			 if (points[i].compareTo(points[i + 1]) == 0) return false;
 		}
 		
-		return false;
+		return true;
 	}
 
 	public int numberOfSegments()

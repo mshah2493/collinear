@@ -8,12 +8,14 @@ public class BruteCollinearPoints
 	
 	public BruteCollinearPoints(Point[] points)
 	{
-		if (!isValid(points)) throw new IllegalArgumentException();
+		if (hasEmptyPoint(points)) throw new IllegalArgumentException();
 		
-		this.lineSegments = new LinkedList<LineSegment>();
+		lineSegments = new LinkedList<LineSegment>();
 		
 		Point[] copySegment = points.clone();
         Arrays.sort(copySegment);
+        
+        if (!hasDuplicates(copySegment)) throw new IllegalArgumentException();
 		
 		for (int i = 0; i < copySegment.length - 3; i++) 
 		{
@@ -42,21 +44,24 @@ public class BruteCollinearPoints
         }
 	}
 
-	private boolean isValid(Point[] points) 
+	private boolean hasEmptyPoint(Point[] points) 
 	{
-		if (points == null) return true;
-		
+        if (points == null) return true;
+        
+        for (Point p : points) 
+            if (p == null) return true;
+        
+        return false;
+    }
+	
+	private boolean hasDuplicates(Point[] points) 
+	{
 		for (int i = 0; i < points.length - 1; i++) 
-		{
-			if (points[i] == null) return true;
-			
-			 if (points[i].compareTo(points[i + 1]) == 0) 
-	         {
-	                return true;
-	         }
+		{			
+			 if (points[i].compareTo(points[i + 1]) == 0) return false;
 		}
 		
-		return false;
+		return true;
 	}
 
 	public int numberOfSegments()
